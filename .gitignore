@@ -1,0 +1,12 @@
+# User Plugin Dir
+/plugins/proxy/*
+/plugins/server/*
+
+# Local Data Dir
+/server_data/
+/backup_data/
+
+# Local Setting
+/.env
+
+!*.gitkeep

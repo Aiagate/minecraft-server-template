@@ -1,0 +1,69 @@
+services:
+  proxy:
+    image: itzg/bungeecord:latest
+    env_file:
+      - ./.env
+    ports:
+      - ${IP:?err}:25565:25577/tcp
+    volumes:
+      - ./config/config.yml:/config/config.yml
+      - ./plugins/proxy:/plugins
+      # - "./proxy_data:/server"
+    environment:
+      TZ: Asia/Tokyo
+      TYPE: "BUNGEECORD"
+      MEMORY: "128M"
+      JAVA: "latest"
+      REPLACE_ENV_VARIABLES: "TRUE"
+      REPLACE_ENV_DURING_SYNC : "TRUE"
+    restart: always
+    depends_on:
+      - "server"
+
+  server:
+    image: itzg/minecraft-server:latest
+    env_file:
+      - ./settings/.env.server
+      - ./.env
+    environment:
+      EULA: "TRUE"
+      TYPE: "SPIGOT"
+      VERSION: "${SERVER_VERSION}"
+      MEMORY: "${SERVER_MEMORY}"
+      MOTD: "%SERVER_MOTD%\nVersion %env:SERVER_VERSION%"
+      TZ: "Asia/Tokyo"
+      ONLINE_MODE: "FALSE"
+      COPY_CONFIG_DEST: /data
+      SYNC_SKIP_NEWER_IN_DESTINATION: "FALSE"
+      OPS: |
+        Shimae_vrc
+      EXISTING_OPS_FILE: "SYNC_FILE_MERGE_LIST"
+    volumes:
+      - ./server_data:/data
+      - ./config/server.properties:/config/server.properties
+      - ./config/spigot.yml:/config/spigot.yml
+      - ./plugins/server:/plugins
+    restart: always
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    env_file:
+      - ./settings/.env.tunnel
+      - ./.env
+    command: tunnel run
+    restart: always
+
+  backups:
+    image: itzg/mc-backup:latest
+    environment:
+      TZ: Asia/Tokyo
+      BACKUP_INTERVAL: "7d"
+      INITIAL_DELAY: "2m"
+      PLAYERS_ONLINE_CHECK_INTERVAL: "5m"
+      RCON_HOST: "localhost"
+      PAUSE_IF_NO_PLAYERS: "true"
+    volumes:
+      - ./server_data:/data:ro
+      - ./backup_data:/backups
+    network_mode: "service:server"
+    restart: always
