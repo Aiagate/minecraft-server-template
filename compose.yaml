@@ -8,7 +8,7 @@ services:
     volumes:
       - ./config/config.yml:/config/config.yml
       - ./plugins/proxy:/plugins
-      # - "./proxy_data:/server"
+      - "./proxy_data:/server"
     environment:
       TZ: Asia/Tokyo
       TYPE: "BUNGEECORD"
@@ -25,11 +25,14 @@ services:
     env_file:
       - ./settings/.env.server
       - ./.env
+    ports:
+      - ${IP:?err}:8123:8123/tcp
     environment:
       EULA: "TRUE"
-      TYPE: "SPIGOT"
+      TYPE: "${SERVER_TYPE}"
       VERSION: "${SERVER_VERSION}"
       MEMORY: "${SERVER_MEMORY}"
+      CUSTOM_SERVER: "${SERVER_JAR_PATH}"
       MOTD: "%SERVER_MOTD%\nVersion %env:SERVER_VERSION%"
       TZ: "Asia/Tokyo"
       ONLINE_MODE: "FALSE"
@@ -45,25 +48,25 @@ services:
       - ./plugins/server:/plugins
     restart: always
 
-  tunnel:
-    image: cloudflare/cloudflared:latest
-    env_file:
-      - ./settings/.env.tunnel
-      - ./.env
-    command: tunnel run
-    restart: always
+  # tunnel:
+  #   image: cloudflare/cloudflared:latest
+  #   env_file:
+  #     - ./settings/.env.tunnel
+  #     - ./.env
+  #   command: tunnel run
+  #   restart: always
 
-  backups:
-    image: itzg/mc-backup:latest
-    environment:
-      TZ: Asia/Tokyo
-      BACKUP_INTERVAL: "7d"
-      INITIAL_DELAY: "2m"
-      PLAYERS_ONLINE_CHECK_INTERVAL: "5m"
-      RCON_HOST: "localhost"
-      PAUSE_IF_NO_PLAYERS: "true"
-    volumes:
-      - ./server_data:/data:ro
-      - ./backup_data:/backups
-    network_mode: "service:server"
-    restart: always
+  # backups:
+  #   image: itzg/mc-backup:latest
+  #   environment:
+  #     TZ: Asia/Tokyo
+  #     BACKUP_INTERVAL: "7d"
+  #     INITIAL_DELAY: "2m"
+  #     PLAYERS_ONLINE_CHECK_INTERVAL: "5m"
+  #     RCON_HOST: "localhost"
+  #     PAUSE_IF_NO_PLAYERS: "true"
+  #   volumes:
+  #     - ./server_data:/data:ro
+  #     - ./backup_data:/backups
+  #   network_mode: "service:server"
+  #   restart: always

@@ -5,6 +5,7 @@
 # Local Data Dir
 /server_data/
 /backup_data/
+/proxy_data/
 
 # Local Setting
 /.env
